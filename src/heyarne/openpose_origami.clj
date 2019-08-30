@@ -12,7 +12,7 @@
 (def cell 46) ;; <- NOTE: This is just taken blindly from Magicandlove
 (def threshold 0.1)
 
-#_(def bodyparts
+(def bodyparts
   {::left-shoulder [1 2]
    ::right-shoulder [1 5]
    ::left-arm [2 3]
@@ -70,15 +70,25 @@
 (def radius 5)
 (def thickness 1)
 
-(defn draw-circles! [mat points color radius thickness]
+(defn draw-bodyparts! [mat points bodyparts color thickness]
+  (doseq [[_ [from to]] bodyparts]
+    (let [[ax ay :as a] (nth points from nil)
+          [bx by :as b] (nth points to nil)]
+      (when (and a b)
+        (cv/line mat (Point. ax ay) (Point. bx by) color thickness cv/LINE_AA))))
+  mat)
+
+(defn draw-joints! [mat points color radius thickness]
   (doseq [[x y] points]
     (cv/circle mat (Point. x y)
-               radius color thickness))
+               radius color thickness cv/LINE_AA))
   mat)
 
 (defn -main [& args]
-  (-> (cv/clone img)
-      (draw-circles! (points output) rgb/greenyellow radius thickness)
-      (utils/imshow)))
+  (let [joints (points output)]
+    (-> (cv/clone img)
+        (draw-bodyparts! joints bodyparts rgb/red-2 thickness)
+        (draw-joints! joints rgb/greenyellow radius thickness)
+        (utils/imshow))))
 
-;; (-main)
+#_(-main)
